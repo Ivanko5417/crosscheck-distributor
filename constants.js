@@ -1,0 +1,1 @@
+exports.NUMBER_OF_REVIEWERS = 3;

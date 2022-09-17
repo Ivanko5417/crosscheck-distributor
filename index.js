@@ -1,56 +1,23 @@
-const PARTICIPANTS_LIST = ['Ivan', 'Oleg', 'Peter', 'Yana', 'Alex'];
-const NUMBER_OF_REVIEWERS = 4;
-const CHOOSE_REVIEWER_ATTEMPTS = NUMBER_OF_REVIEWERS * 2;
+const xlsx = require('node-xlsx');
+const fs = require('fs');
+const { distributor } = require('./utils');
+const { NUMBER_OF_REVIEWERS } = require('./constants');
 
-const chooseReviewer = (reviewers, exclude) => {
-  let reviewer;
-  let randomIndex;
-  let attempts = 0;
-  do {
-    attempts++;
-    randomIndex = Math.floor(Math.random() * reviewers.length)
-    reviewer = reviewers[randomIndex];
-  } while (exclude.includes(reviewer) && attempts < CHOOSE_REVIEWER_ATTEMPTS);
-  if (attempts >= CHOOSE_REVIEWER_ATTEMPTS) {
-    console.log(`More than ${CHOOSE_REVIEWER_ATTEMPTS} attempts.`);
-    return 0;
-  }
-  return randomIndex;
+const getFirstRow = () => {
+  const reviewersCells = new Array(NUMBER_OF_REVIEWERS).fill(0).map((_, index) => `Reviewer ${index + 1}`);
+  return ['Student name', ...reviewersCells];
 }
 
-const distribute = (participants, numberOfReviewer) => {
-  const participantsCopyArr = new Array(numberOfReviewer).fill(0).map(() => [...participants]);
-  const result = []
-  for (let currentParticipantIndex = 0; currentParticipantIndex < participants.length; currentParticipantIndex++) {
-    const currentParticipant = participants[currentParticipantIndex];
-    result[currentParticipantIndex] = [currentParticipant];
-    for (const participantsCopy of participantsCopyArr) {
-      const reviewerIndex = chooseReviewer(participantsCopy, result[currentParticipantIndex]);
-      const reviewer = participantsCopy[reviewerIndex];
-      result[currentParticipantIndex].push(reviewer);
-      participantsCopy.splice(reviewerIndex, 1);
-    }
-  }
-  return result;
-}
+const workSheetsFromFile = xlsx.parse(`${__dirname}/Participants.xlsx`);
+const participants = workSheetsFromFile[0].data.map(([, participant]) => participant);
+const reviewers = distributor(participants)
+console.log(reviewers);
 
 
+const data = [
+  getFirstRow(),
+  ...reviewers,
+];
+const buffer = xlsx.build([{ name: 'Reviewers List', data: data }]);
 
-
-const isValid = (reviewersList) => reviewersList.every((reviewers) =>
-  new Set(reviewers).size === reviewers.length
-);
-
-const main = (participants, numberOfReviewer) => {
-  let reviewersList;
-  let iteration = 0;
-  do {
-    iteration++;
-    console.log(`Iteration number [${iteration}].`);
-    reviewersList = distribute(participants, numberOfReviewer);
-  } while(isValid(reviewersList));
-  return reviewersList;
-}
-
-
-console.log(main(PARTICIPANTS_LIST, NUMBER_OF_REVIEWERS));
+fs.writeFileSync('Reviewers.xlsx', buffer)
