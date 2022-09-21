@@ -12,7 +12,7 @@ const chooseReviewer = (reviewers, exclude) => {
     reviewer = reviewers[randomIndex];
   } while (exclude.includes(reviewer) && attempts < CHOOSE_REVIEWER_ATTEMPTS);
   if (attempts >= CHOOSE_REVIEWER_ATTEMPTS) {
-    console.log(`More than ${CHOOSE_REVIEWER_ATTEMPTS} attempts.`);
+    console.log(`More than ${CHOOSE_REVIEWER_ATTEMPTS} attempts.`, reviewers, exclude);
     return 0;
   }
   return randomIndex;
@@ -48,7 +48,7 @@ exports.distributor = (participants) => {
     iteration++;
     console.log(`Iteration number [${iteration}].`);
     reviewersList = distribute(participants, NUMBER_OF_REVIEWERS);
-  } while(isValid(reviewersList));
+  } while(!isValid(reviewersList));
   return reviewersList;
 }
 

@@ -11,7 +11,6 @@ const getFirstRow = () => {
 const workSheetsFromFile = xlsx.parse(`${__dirname}/Participants.xlsx`);
 const participants = workSheetsFromFile[0].data.slice(1).map(([, participant]) => participant);
 const reviewers = distributor(participants)
-console.log(reviewers);
 
 
 const data = [
